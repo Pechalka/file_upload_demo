@@ -59,19 +59,14 @@ var Documents = function(doc_id){
     var self = this;
 
     self.activate = function(){
-        // Initialize the jQuery File Upload widget:
+
         $('#fileupload').fileupload({
             disableImageResize: false,
-            // Uncomment the following to send cross-domain cookies:
-            //xhrFields: {withCredentials: true},
             url: '/uploads/' + doc_id
         });
 
-        // Load existing files:
         $('#fileupload').addClass('fileupload-processing');
         $.ajax({
-            // Uncomment the following to send cross-domain cookies:
-            //xhrFields: {withCredentials: true},
             url: $('#fileupload').fileupload('option', 'url'),
             dataType: 'json',
             context: $('#fileupload')[0]

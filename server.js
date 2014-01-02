@@ -1,8 +1,4 @@
-var docs = [
-    { title : 'massage', status : 'Checked', id : 1 , files : []},
-    { title : 'Tanning', status : 'Invalid', id : 2 , files : []},
-    { title : 'Blow Dry', status : 'Not hecked', id : 3 , files : []}
-];
+
 
 
 
@@ -26,8 +22,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 var upload = require('jquery-file-upload-middleware');
 
 upload.configure({
-        uploadDir: __dirname + '/public/uploads',
-        uploadUrl: '/uploads',
         imageVersions: {
             thumbnail: {
                 width: 80,
@@ -36,32 +30,14 @@ upload.configure({
         }
     });
 
-upload.on('end', function (fileInfo) { 
-	console.log('end file>');
-	console.log('fileInfo', fileInfo);
-	console.log();
-	
-	var file_name = fileInfo.name;
-	doc_id = parseInt(doc_id)
+var docs = [
+    { title : 'massage', status : 'Checked', id : 1 , files : []},
+    { title : 'Tanning', status : 'Invalid', id : 2 , files : []},
+    { title : 'Blow Dry', status : 'Not hecked', id : 3 , files : []}
+];
 
-	for (var i = docs.length - 1; i >= 0; i--) {
-		var d = docs[i];
-		if (d.id == doc_id)
-			d.files.push(file_name);
-
-	};
-
-});
-
-upload.on('delete', function (fileInfo) { 
-	console.log('delete file>');
-	console.log('fileInfo', fileInfo);
-	console.log();
-	
-
-
-	var file_name = fileInfo.name;
-	doc_id = parseInt(doc_id)
+var remove_file = function(file_name, doc_id){
+	var doc_id = parseInt(doc_id)
 
 	for (var i = docs.length - 1; i >= 0; i--) {
 		var d = docs[i];
@@ -71,28 +47,41 @@ upload.on('delete', function (fileInfo) {
 		}
 
 	};	
-});
+}
+
+var add_file = function(file_name, doc_id){
+	var doc_id = parseInt(doc_id)
+
+	for (var i = docs.length - 1; i >= 0; i--) {
+		var d = docs[i];
+		if (d.id == doc_id)
+			d.files.push(file_name);
+
+	};		
+}
 
 
-var doc_id;
 
-app.use('/uploads', function (req, res, next) {
-	doc_id = req.url.split('/')[1];
-
-
+app.use('/uploads', function (req, res) {
+	var doc_id = req.url.split('/')[1]; // /uploads/2 => 2 - doc_id
     upload.fileHandler({
+    	tmp : { doc_id : doc_id},
         uploadDir: __dirname + '/public/uploads/' + doc_id,
         uploadUrl:  '/uploads/' + doc_id
-    })(req, res, next);
+    })(req, res)
+    .on('delete', function(file_name){
+    	remove_file(file_name, doc_id)
+    })
+    .on('end',function(fileInfo){
+    	add_file(fileInfo.name, doc_id);
+    });
+
 });
 
 app.get('/api/docs', function(req, res){
-
-
 	res.json(docs);
 })
 
-app.use(express.bodyParser());
 
 var server = http.createServer(app);
 server.listen(4000, function(){
